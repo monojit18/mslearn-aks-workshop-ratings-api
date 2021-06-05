@@ -9,12 +9,14 @@ deployment:
   strategyType: RollingUpdate
   maxSurge: 1
   maxUnavailable: 1
+  nodeSelector:
+    agentpool: aksapipool
   containers:
   - name: ratingsapi-app
-    image: akswkshpacr.azurecr.io/ratingsapi:v1.0.0
+    image: akswkshpacr.azurecr.io/ratings-api:v1.0.0
     imagePullPolicy: IfNotPresent
     readinessPort: 3000
-    readinessPath: /healthz      
+    readinessPath: /healthz
     livenessPort: 3000
     livenessPath: /healthz
     memoryRequest: "64Mi"
@@ -22,8 +24,6 @@ deployment:
     memoryLimit: "256Mi"
     cpuLimit: "200m"
     containerPorts: [3000]    
-    nodeSelector:
-      agentpool: aksapipool
     env:          
     - name: MONGODB_URI
       valueKey: MONGOCONNECTION

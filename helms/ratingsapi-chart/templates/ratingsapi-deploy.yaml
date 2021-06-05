@@ -21,8 +21,10 @@ spec:
       labels:
       {{ toYaml $deployment.selectorLabels | nindent 8 }}
     spec:
+      nodeSelector:
+      {{ toYaml $deployment.nodeSelector | nindent 8 }}
       containers:
-      {{ $container := (index $deployment.containers 0) }}
+      {{- range $container := $deployment.containers }}
       - name: {{ $container.name }}
         image: {{ $container.image }}
         imagePullPolicy: {{ $container.imagePullPolicy }}
@@ -33,23 +35,28 @@ spec:
           limits:
             memory: {{ $container.memoryLimit }}
             cpu: {{ $container.cpuLimit }}
+        {{ if and $container.readinessPort $container.readinessPath}}
         readinessProbe:
           httpGet:
             port: {{ $container.readinessPort }}
             path: {{ $container.readinessPath }}
+        {{ end }}
+        {{ if and $container.livenessPort $container.livenessPath }}
         livenessProbe:
           httpGet:
             port: {{ $container.livenessPort }}
             path: {{ $container.livenessPath }}
+        {{ end }}
         env:
-        {{ range $env := $container.env }}
+        {{- range $env := $container.env }}
         - name: {{ $env.name }}
           valueFrom:
             secretKeyRef:
               key: {{ $env.valueKey }}
               name: {{ $env.valueSecret }}
-        {{ end }}
+        {{- end }}
         ports:
-        - containerPort: {{ (index $container.containerPorts 0) }}
-      nodeSelector:
-      {{ toYaml $container.nodeSelector | nindent 8 }}
+        {{- range $containerPort := $container.containerPorts }}
+        - containerPort: {{ $containerPort }}
+        {{- end }}
+      {{- end }}      
