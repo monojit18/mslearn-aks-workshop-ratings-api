@@ -1,0 +1,44 @@
+deployment:
+  name: ratingsapi-deploy
+  namespace: capz-workshop-dev
+  labels:
+    app: ratingsapi-deploy
+  selectorLabels:
+    app: ratingsapi-pod
+  replicas: 2
+  strategyType: RollingUpdate
+  maxSurge: 1
+  maxUnavailable: 1
+  nodeSelector:
+    agentpool: capzapipool
+  imagePullSecrets:
+  - name: capz-acr-secret
+  containers:
+  - name: ratingsapi-app
+    image: capzacr.azurecr.io/ratings-api:v1.0.0
+    imagePullPolicy: IfNotPresent
+    readinessPort: 3000
+    readinessPath: /healthz
+    livenessPort: 3000
+    livenessPath: /healthz
+    memoryRequest: "64Mi"
+    cpuRequest: "100m"
+    memoryLimit: "256Mi"
+    cpuLimit: "200m"
+    containerPorts: [3000]    
+    env:          
+    - name: MONGODB_URI
+      valueKey: MONGOCONNECTION
+      valueSecret: capz-workshop-mongo-secret
+service:
+  name: ratingsapi-service
+  namespace: capz-workshop-dev
+  selector:
+    app: ratingsapi-pod
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3000
+    
+    
