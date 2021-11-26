@@ -1,0 +1,48 @@
+tenantId=""
+subscriptionId=""
+clusterName="aks-workshop-cluster"
+resourceGroup="aks-workshop-rg"
+acrName=""
+
+az login --tenant $tenantId
+az aks get-credentials -g $resourceGroup -n $clusterName
+
+az acr build -t $acrName.azurecr.io/ratings-api:v1.0.0 -r $acrName .
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm search repo bitnami
+
+helm install ratingsdb bitnami/mongodb -n db \
+--set auth.username=ratingsuser,auth.password=ratingspwd,auth.database=ratingsdb \
+--set controller.nodeSelector.agentpool=akssyspool \
+--set controller.defaultBackend.nodeSelector.agentpool=akssyspool
+
+#helm uninstall ratingsdb -n db
+
+DEV
+===
+
+k create secret generic aks-workshop-mongo-secret -n aks-workshop-dev \
+    --from-literal=MONGOCONNECTION="mongodb://ratingsuser:ratingspwd@ratingsdb-mongodb.db:27017/ratingsdb"
+
+#k delete secrets/aks-workshop-mongo-secret -n aks-workshop-dev
+
+helm install ratingsapi-chart -n aks-workshop-dev ./ratingsapi-chart/ -f ./ratingsapi-chart/AKSWorkshop/values-dev.yaml
+helm upgrade ratingsapi-chart -n aks-workshop-dev ./ratingsapi-chart/ -f ./ratingsapi-chart/AKSWorkshop/values-dev.yaml
+#helm uninstall ratingsapi-chart -n aks-workshop-dev
+
+QA
+==
+k create secret generic aks-workshop-mongo-secret -n aks-workshop-qa \
+    --from-literal=MONGOCONNECTION="mongodb://ratingsuser:ratingspwd@ratingsdb-mongodb.db:27017/ratingsdb"
+
+k delete secrets/aks-workshop-mongo-secret -n aks-workshop-qa
+
+helm install ratingsapi-chart -n aks-workshop-qa ./ratingsapi-chart/ -f ./ratingsapi-chart/AKSWorkshop/values-qa.yaml
+helm upgrade ratingsapi-chart -n aks-workshop-qa ./ratingsapi-chart/ -f ./ratingsapi-chart/AKSWorkshop/values-qa.yaml
+#helm uninstall ratingsapi-chart -n aks-workshop-qa
+
+
+
+
+

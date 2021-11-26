@@ -1,10 +1,10 @@
 deployment:
   name: ratingsapi-deploy
-  namespace: aks-workshop-dev
+  namespace: aks-train-qa
   labels:
     app: ratingsapi-deploy
   selectorLabels:
-    app: ratingsapi-pod    
+    app: ratingsapi-pod
   replicas: 2
   strategyType: RollingUpdate
   maxSurge: 1
@@ -13,7 +13,7 @@ deployment:
     agentpool: aksapipool
   containers:
   - name: ratingsapi-app
-    image: akswkshpacr.azurecr.io/ratings-api:v1.0.0
+    image: akstrnacr.azurecr.io/ratings-api:v1.0.0
     imagePullPolicy: IfNotPresent
     readinessPort: 3000
     readinessPath: /healthz
@@ -30,7 +30,7 @@ deployment:
       valueSecret: aks-workshop-mongo-secret
 service:
   name: ratingsapi-service
-  namespace: aks-workshop-dev
+  namespace: aks-train-qa
   selector:
     app: ratingsapi-pod
   type: ClusterIP
@@ -40,7 +40,7 @@ service:
     targetPort: 3000
 hpa:
   name: ratingsapi-hpa
-  namespace: aks-workshop-dev
+  namespace: aks-train-qa
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
@@ -51,5 +51,3 @@ hpa:
   - name: cpu
     targetType: Utilization        
     averageUtilization: 75
-    
-    
