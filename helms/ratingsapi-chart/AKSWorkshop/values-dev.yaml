@@ -15,7 +15,7 @@ deployment:
     agentpool: aksapipool
   containers:
   - name: ratingsapi-app
-    image: akswkshpacr.azurecr.io/ratings-api:v1.0.0
+    image: akswkshpacr.azurecr.io/ratings-api:v1.0.1
     imagePullPolicy: IfNotPresent
     readinessPort: 3000
     readinessPath: /healthz
