@@ -7,7 +7,7 @@ deployment:
   selectorLabels:
     app: ratingsapi-pod
     version: v1
-  replicas: 2
+  replicas: 1
   strategyType: RollingUpdate
   maxSurge: 1
   maxUnavailable: 1
@@ -15,7 +15,7 @@ deployment:
     agentpool: aksapipool
   containers:
   - name: ratingsapi-app
-    image: akswkshpacr.azurecr.io/ratings-api:v1.0.1
+    image: akswkshpprvacr.azurecr.io/ratings-api:v1.0.0
     imagePullPolicy: IfNotPresent
     readinessPort: 3000
     readinessPath: /healthz
@@ -48,11 +48,9 @@ hpa:
     apiVersion: apps/v1
     kind: Deployment
     name: ratingsapi-deploy
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 50
   metrics:
   - name: cpu
     targetType: Utilization        
     averageUtilization: 75
-    
-    
