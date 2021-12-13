@@ -61,8 +61,21 @@ spec:
               key: {{ $env.valueKey }}
               name: {{ $env.valueSecret }}
         {{- end }}
+        # volumeMounts:
+        # - name: secrets-store01-inline
+        #   mountPath: "/mnt/secrets-store"
+        #   readOnly: true
         ports:
         {{- range $containerPort := $container.containerPorts }}
         - containerPort: {{ $containerPort }}
         {{- end }}
-      {{- end }}      
+      {{- end }}
+      # volumes:
+      # - name: secrets-store01-inline
+      #   csi:
+      #     driver: secrets-store.csi.k8s.io
+      #     readOnly: true
+      #     volumeAttributes:
+      #       secretProviderClass: "ratings-secrets-provider"
+      #     nodePublishSecretRef:
+      #       name: secrets-store-creds
