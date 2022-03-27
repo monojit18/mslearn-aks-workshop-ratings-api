@@ -10,7 +10,7 @@ deployment:
   maxSurge: 1
   maxUnavailable: 1
   nodeSelector:
-    agentpool: capzapipool
+    agentpool: capzsyspool
   imagePullSecrets:
   - name: capz-acr-secret
   containers:
@@ -40,5 +40,17 @@ service:
   - protocol: TCP
     port: 80
     targetPort: 3000
-    
+hpa:
+  name: ratingsapi-hpa
+  namespace: capz-workshop-dev
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ratingsapi-deploy
+  minReplicas: 1
+  maxReplicas: 50
+  metrics:
+  - name: cpu
+    targetType: Utilization        
+    averageUtilization: 75
     

@@ -1,0 +1,42 @@
+tenantId=""
+capzClusterName=capz-k8s-cluster
+acrName=""
+baseFolderPath=""
+
+az acr build -t $acrName.azurecr.io/ratings-api:v1.0.0 -r $acrName .
+
+alias k-capz="kubectl --kubeconfig=$baseFolderPath/Setup/$capzClusterName.kubeconfig"
+alias helm-capz="helm --kubeconfig=$baseFolderPath/Setup/$capzClusterName.kubeconfig"
+
+helm-capz repo add bitnami https://charts.bitnami.com/bitnami
+
+helm-capz install ratingsdb bitnami/mongodb -n db \
+--set auth.username=ratingsuser,auth.password=ratingspwd,auth.database=ratingsdb \
+--set controller.nodeSelector.agentpool=capzsyspool \
+--set controller.defaultBackend.nodeSelector.agentpool=capzsyspool \
+--set persistence.storageClass=managed-premium
+
+helm-capz uninstall ratingsdb -n db
+
+DEV
+===
+
+k-capz create secret generic capz-workshop-mongo-secret -n capz-workshop-dev \
+--from-literal=MONGOCONNECTION="mongodb://ratingsuser:ratingspwd@ratingsdb-mongodb.db:27017/ratingsdb"
+
+#k-capz delete secrets/capz-workshop-mongo-secret -n capz-workshop-dev
+
+helm-capz install ratingsapi-chart -n capz-workshop-dev ./ratingsapi-chart/ -f ./ratingsapi-chart/CAPZ/values-dev.yaml
+helm-capz upgrade ratingsapi-chart -n capz-workshop-dev ./ratingsapi-chart/ -f ./ratingsapi-chart/CAPZ/values-dev.yaml
+helm-capz uninstall ratingsapi-chart -n capz-workshop-dev
+
+QA
+==
+k-capz create secret generic capz-workshop-mongo-secret -n capz-workshop-qa \
+    --from-literal=MONGOCONNECTION="mongodb://ratingsuser:ratingspwd@ratingsdb-mongodb.db:27017/ratingsdb"
+
+#k-capz delete secrets/capz-workshop-mongo-secret -n capz-workshop-qa
+
+helm-capz install ratingsapi-chart -n capz-workshop-qa ./ratingsapi-chart/ -f ./ratingsapi-chart/CAPZ/values-qa.yaml
+helm-capz upgrade ratingsapi-chart -n capz-workshop-qa ./ratingsapi-chart/ -f ./ratingsapi-chart/CAPZ/values-qa.yaml
+helm-capz uninstall ratingsapi-chart -n capz-workshop-qa
