@@ -1,26 +1,24 @@
 deployment:
   name: ratingsapi-deploy
-  namespace: capz-workshop-dev
+  namespace: aks-train-dev
   labels:
     app: ratingsapi-deploy
   selectorLabels:
-    app: ratingsapi-pod
-  replicas: 2
+    app: ratingsapi-pod    
+  replicas: 1
   strategyType: RollingUpdate
   maxSurge: 1
   maxUnavailable: 1
   nodeSelector:
-    agentpool: capzsyspool
-  imagePullSecrets:
-  - name: capz-acr-secret
+    agentpool: aksapipool
   containers:
   - name: ratingsapi-app
-    image: capzacr.azurecr.io/ratings-api:v1.0.0
+    image: akstrnacr.azurecr.io/ratings-api:v1.0.0
     imagePullPolicy: IfNotPresent
     readinessPort: 3000
     readinessPath: /healthz
     livenessPort: 3000
-    livenessPath: /healthz
+    livenessPath: /healthz    
     memoryRequest: "64Mi"
     cpuRequest: "100m"
     memoryLimit: "256Mi"
@@ -29,20 +27,21 @@ deployment:
     env:          
     - name: MONGODB_URI
       valueKey: MONGOCONNECTION
-      valueSecret: capz-workshop-mongo-secret
+      valueSecret: aks-workshop-mongo-secret
 service:
   name: ratingsapi-service
-  namespace: capz-workshop-dev
+  namespace: aks-train-dev
   selector:
     app: ratingsapi-pod
   type: ClusterIP
   ports:
   - protocol: TCP
     port: 80
+    name: http
     targetPort: 3000
 hpa:
   name: ratingsapi-hpa
-  namespace: capz-workshop-dev
+  namespace: aks-train-dev
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
@@ -53,4 +52,5 @@ hpa:
   - name: cpu
     targetType: Utilization        
     averageUtilization: 75
+    
     

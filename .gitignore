@@ -355,4 +355,5 @@ MigrationBackup/
 .DS_Store
 dist/
 
-misc
+helms/**/misc/commands.txt
+helms/**/misc/ratings*.yaml

@@ -3,9 +3,11 @@ deployment:
   namespace: aks-workshop-dev
   labels:
     app: ratingsapi-deploy
+    version: v1
   selectorLabels:
     app: ratingsapi-pod
-  replicas: 2
+    version: v1
+  replicas: 1
   strategyType: RollingUpdate
   maxSurge: 1
   maxUnavailable: 1
@@ -36,7 +38,19 @@ service:
   type: ClusterIP
   ports:
   - protocol: TCP
+    name: http
     port: 80
     targetPort: 3000
-    
-    
+hpa:
+  name: ratingsapi-hpa
+  namespace: aks-workshop-dev
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ratingsapi-deploy
+  minReplicas: 1
+  maxReplicas: 50
+  metrics:
+  - name: cpu
+    targetType: Utilization        
+    averageUtilization: 75
